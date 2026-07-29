@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- Updated README demo GIF animation URL.
+- Added animated showcase preview.
+
 ## 0.1.0
 
 - **Initial Stable Release** by **Rayan** (`rayanMS1122`).
