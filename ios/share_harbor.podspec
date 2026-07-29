@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 A durable inbound share inbox for Flutter on Android and iOS with transactional delivery guarantees.
                        DESC
-  s.homepage         = 'https://github.com/raean/share_harbor'
+  s.homepage         = 'https://github.com/rayanMS1122/share_harbor'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Raean' => 'raean@shareharbor.dev' }
   s.source           = { :path => '.' }
