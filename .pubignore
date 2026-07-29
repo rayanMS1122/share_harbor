@@ -1,0 +1,14 @@
+# Ignore large media, build artifacts & temporary files from pub.dev upload
+*.webm
+*.gif
+*.zip
+coverage/
+tool/
+MASTER_PROMPT_SHARE_HARBOR*.md
+
+# Ignore example build output & android gradle cache
+example/build/
+example/android/.gradle/
+example/android/app/build/
+build/
+.gradle/
