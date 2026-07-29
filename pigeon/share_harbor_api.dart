@@ -5,9 +5,9 @@ import 'package:pigeon/pigeon.dart';
     dartOut: 'lib/src/platform/generated/share_harbor_api.g.dart',
     dartOptions: DartOptions(),
     kotlinOut:
-        'android/src/main/kotlin/dev/raean/share_harbor/generated/ShareHarborApi.g.kt',
+        'android/src/main/kotlin/dev/rayan/share_harbor/generated/ShareHarborApi.g.kt',
     kotlinOptions: KotlinOptions(
-      package: 'dev.raean.share_harbor.generated',
+      package: 'dev.rayan.share_harbor.generated',
     ),
     swiftOut: 'ios/Classes/Generated/ShareHarborApi.g.swift',
     swiftOptions: SwiftOptions(),

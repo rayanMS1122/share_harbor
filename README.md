@@ -5,14 +5,16 @@ A durable inbound share inbox for Flutter on Android and iOS with transactional 
 [![pub package](https://img.shields.io/pub/v/share_harbor.svg)](https://pub.dev/packages/share_harbor)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](LICENSE)
 
+![ShareHarbor Demo](https://raw.githubusercontent.com/rayanMS1122/share_harbor/main/untitled.gif)
+
 `share_harbor` receives text, URLs, images, videos, and files shared from other mobile apps via the native Share Sheet. Shared content is safely committed to a durable file spool **before** the Flutter engine processes it.
 
 ---
 
 ## Author & Copyright
 
-Developed by **Raean** (`rayanMS1122`).  
-Licensed under the **BSD-3-Clause License** (Copyright (c) 2026, Raean).
+Developed by **Rayan** (`rayanMS1122`).  
+Licensed under the **BSD-3-Clause License** (Copyright (c) 2026, Rayan).
 
 ---
 
@@ -50,7 +52,7 @@ Register `ShareHarborReceiverActivity` in `android/app/src/main/AndroidManifest.
 
 ```xml
 <activity
-    android:name="dev.raean.share_harbor.ShareHarborReceiverActivity"
+    android:name="dev.rayan.share_harbor.ShareHarborReceiverActivity"
     android:exported="true"
     android:theme="@android:style/Theme.Translucent.NoTitleBar">
     <intent-filter>

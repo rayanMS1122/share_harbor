@@ -1,11 +1,11 @@
-group 'dev.raean.share_harbor'
+group 'dev.rayan.share_harbor'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    namespace 'dev.raean.share_harbor'
+    namespace 'dev.rayan.share_harbor'
     compileSdkVersion 34
 
     compileOptions {

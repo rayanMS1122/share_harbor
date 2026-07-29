@@ -16,9 +16,9 @@ public final class GeneratedPluginRegistrant {
   private static final String TAG = "GeneratedPluginRegistrant";
   public static void registerWith(@NonNull FlutterEngine flutterEngine) {
     try {
-      flutterEngine.getPlugins().add(new dev.raean.share_harbor.ShareHarborPlugin());
+      flutterEngine.getPlugins().add(new dev.rayan.share_harbor.ShareHarborPlugin());
     } catch (Exception e) {
-      Log.e(TAG, "Error registering plugin share_harbor, dev.raean.share_harbor.ShareHarborPlugin", e);
+      Log.e(TAG, "Error registering plugin share_harbor, dev.rayan.share_harbor.ShareHarborPlugin", e);
     }
   }
 }

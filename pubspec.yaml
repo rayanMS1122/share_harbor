@@ -25,7 +25,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: dev.raean.share_harbor
+        package: dev.rayan.share_harbor
         pluginClass: ShareHarborPlugin
       ios:
         pluginClass: ShareHarborPlugin
