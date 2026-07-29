@@ -1,6 +1,6 @@
 name: share_harbor
 description: A durable inbound share inbox for Flutter on Android and iOS with transactional delivery guarantees.
-version: 0.1.1
+version: 0.1.2
 repository: https://github.com/rayanMS1122/share_harbor
 issue_tracker: https://github.com/rayanMS1122/share_harbor/issues
 license: BSD-3-Clause
