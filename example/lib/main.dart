@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_harbor/share_harbor.dart';
 
@@ -102,7 +103,6 @@ class _MainInboxScreenState extends State<MainInboxScreen> {
       final claim = await _harbor!.claim(delivery.deliveryId);
       _showToast('Claimed ${claim.deliveryId.substring(0, 8)}...');
 
-      // Simulate business processing
       await Future.delayed(const Duration(milliseconds: 600));
 
       await _harbor!.ack(claim);
@@ -137,6 +137,35 @@ class _MainInboxScreenState extends State<MainInboxScreen> {
     } catch (e) {
       _showToast('Cleanup failed: $e', isError: true);
     }
+  }
+
+  void _inspectItemDetail(ShareDelivery delivery, ShareItem item) async {
+    if (_harbor == null) return;
+    String? payloadPath;
+    try {
+      payloadPath = await _harbor!.getPayloadPath(
+        item,
+        deliveryId: delivery.deliveryId,
+      );
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return ItemDetailModal(
+          delivery: delivery,
+          item: item,
+          payloadPath: payloadPath,
+        );
+      },
+    );
   }
 
   void _showToast(String message, {bool isError = false}) {
@@ -286,7 +315,6 @@ class _MainInboxScreenState extends State<MainInboxScreen> {
             ),
           ),
 
-          // Loading Bar
           if (_isLoading)
             const SliverToBoxAdapter(
               child: LinearProgressIndicator(
@@ -295,7 +323,6 @@ class _MainInboxScreenState extends State<MainInboxScreen> {
               ),
             ),
 
-          // Action Toolbar
           SliverToBoxAdapter(
             child: Padding(
               padding:
@@ -326,7 +353,6 @@ class _MainInboxScreenState extends State<MainInboxScreen> {
             ),
           ),
 
-          // Delivery Cards List
           _deliveries.isEmpty
               ? SliverFillRemaining(
                   hasScrollBody: false,
@@ -374,6 +400,7 @@ class _MainInboxScreenState extends State<MainInboxScreen> {
                           delivery: delivery,
                           onImport: () => _processDelivery(delivery),
                           onRelease: () => _releaseDelivery(delivery),
+                          onItemTap: (item) => _inspectItemDetail(delivery, item),
                         );
                       },
                       childCount: _deliveries.length,
@@ -431,12 +458,14 @@ class DeliveryCard extends StatelessWidget {
   final ShareDelivery delivery;
   final VoidCallback onImport;
   final VoidCallback onRelease;
+  final Function(ShareItem) onItemTap;
 
   const DeliveryCard({
     super.key,
     required this.delivery,
     required this.onImport,
     required this.onRelease,
+    required this.onItemTap,
   });
 
   @override
@@ -448,7 +477,6 @@ class DeliveryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Row: Platform & State Badges
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -526,7 +554,6 @@ class DeliveryCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Content Text or Subject
             if (delivery.text != null && delivery.text!.isNotEmpty)
               Container(
                 width: double.infinity,
@@ -535,10 +562,8 @@ class DeliveryCard extends StatelessWidget {
                   color: const Color(0x40000000),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
+                child: SelectableText(
                   delivery.text!,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 14,
                     color: Color(0xFFE2E8F0),
@@ -548,22 +573,25 @@ class DeliveryCard extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // Attached Items List
             const Text(
-              'ITEMS',
+              'ATTACHED ITEMS (TAP FOR DETAIL & PREVIEW)',
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.bold,
                 color: Color(0x80FFFFFF),
-                letterSpacing: 1.0,
+                letterSpacing: 0.8,
               ),
             ),
             const SizedBox(height: 6),
-            ...delivery.items.map((item) => ItemTile(item: item)),
+            ...delivery.items.map(
+              (item) => ItemTile(
+                item: item,
+                onTap: () => onItemTap(item),
+              ),
+            ),
 
             const SizedBox(height: 16),
 
-            // Action Buttons
             Row(
               children: [
                 Expanded(
@@ -606,50 +634,58 @@ class DeliveryCard extends StatelessWidget {
 
 class ItemTile extends StatelessWidget {
   final ShareItem item;
+  final VoidCallback onTap;
 
-  const ItemTile({super.key, required this.item});
+  const ItemTile({super.key, required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final color = _getKindColor(item.kind);
     final icon = _getKindIcon(item.kind);
 
-    return Container(
-      margin: const EdgeInsets.only(top: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0x0AFFFFFF),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.originalName ?? item.itemId,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        margin: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0x0AFFFFFF),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0x33FFFFFF)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.originalName ?? item.itemId,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                Text(
-                  '${item.resolvedMimeType ?? "unknown"} • ${_formatBytes(item.byteLength)}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0x80FFFFFF),
+                  Text(
+                    '${item.resolvedMimeType ?? "unknown"} • ${_formatBytes(item.byteLength)}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0x80FFFFFF),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+            const Icon(Icons.chevron_right_rounded,
+                color: Colors.white38, size: 20),
+          ],
+        ),
       ),
     );
   }
@@ -691,5 +727,179 @@ class ItemTile extends StatelessWidget {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+}
+
+class ItemDetailModal extends StatelessWidget {
+  final ShareDelivery delivery;
+  final ShareItem item;
+  final String? payloadPath;
+
+  const ItemDetailModal({
+    super.key,
+    required this.delivery,
+    required this.item,
+    this.payloadPath,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isImage = item.kind == ShareItemKind.image &&
+        payloadPath != null &&
+        File(payloadPath!).existsSync();
+    final bool isUrl = item.kind == ShareItemKind.url ||
+        (delivery.text != null && delivery.text!.startsWith('http'));
+
+    return Padding(
+      padding: EdgeInsets.only(
+        top: 24,
+        left: 20,
+        right: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Icon(
+                item.kind == ShareItemKind.image
+                    ? Icons.image_rounded
+                    : isUrl
+                        ? Icons.link_rounded
+                        : Icons.description_rounded,
+                color: const Color(0xFF6366F1),
+                size: 24,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  item.originalName ?? 'Shared Payload Item',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Image Preview Container
+          if (isImage)
+            Container(
+              height: 220,
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.file(
+                  File(payloadPath!),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+
+          // Link Preview Container
+          if (isUrl && delivery.text != null)
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: const Color(0x266366F1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF6366F1)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.link, color: Colors.tealAccent),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: SelectableText(
+                      delivery.text!,
+                      style: const TextStyle(
+                        color: Colors.tealAccent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // Metadata Table
+          _buildMetaRow('Item ID', item.itemId),
+          _buildMetaRow('Internal Name', item.internalName),
+          _buildMetaRow('MIME Type', item.resolvedMimeType ?? 'Unknown'),
+          _buildMetaRow('Byte Size', '${item.byteLength} Bytes'),
+          if (payloadPath != null) _buildMetaRow('File Path', payloadPath!),
+
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6366F1),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('CLOSE PREVIEW'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetaRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white54,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: SelectableText(
+              value,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

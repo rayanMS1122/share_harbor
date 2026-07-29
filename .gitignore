@@ -1,0 +1,27 @@
+# Flutter / Dart build outputs
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+
+# Android build outputs
+.gradle/
+**/android/.gradle/
+**/android/local.properties
+**/android/app/build/
+
+# iOS build outputs
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/DerivedData/
+
+# ZIP & OS files
+*.zip
+*.DS_Store
+Thumbs.db
